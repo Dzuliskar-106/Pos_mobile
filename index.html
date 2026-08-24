@@ -1,0 +1,954 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>POS Kasir Mobile Pro</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #10b981;
+      --primary-dark: #059669;
+      --primary-light: #ecfdf5;
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --text: #0f172a;
+      --muted: #64748b;
+      --border: #e2e8f0;
+      --danger: #ef4444;
+      --danger-light: #fef2f2;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      width: 100vw;
+      height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      overflow: hidden;
+    }
+
+    .app-screen {
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    /* LOGIN / AUTH OVERLAY */
+    .login-overlay {
+      position: fixed;
+      inset: 0;
+      background: #0f172a;
+      color: #ffffff;
+      z-index: 999;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .login-card {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 24px;
+      padding: 32px 24px;
+      width: 100%;
+      max-width: 380px;
+      text-align: center;
+      box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+    }
+
+    .login-avatar {
+      width: 64px;
+      height: 64px;
+      background: rgba(16, 185, 129, 0.2);
+      color: var(--primary);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.8rem;
+      font-weight: 800;
+      margin: 0 auto 16px;
+    }
+
+    .login-title {
+      font-size: 1.3rem;
+      font-weight: 800;
+      margin-bottom: 4px;
+    }
+
+    .login-subtitle {
+      font-size: 0.8rem;
+      color: #94a3b8;
+      margin-bottom: 24px;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+      text-align: left;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #94a3b8;
+      margin-bottom: 6px;
+    }
+
+    .form-input, .form-select {
+      width: 100%;
+      padding: 12px 16px;
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      color: #ffffff;
+      font-size: 0.95rem;
+      font-weight: 700;
+      outline: none;
+    }
+
+    .form-input:focus, .form-select:focus {
+      border-color: var(--primary);
+    }
+
+    .btn-login {
+      width: 100%;
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 14px;
+      border-radius: 12px;
+      font-size: 0.95rem;
+      font-weight: 800;
+      cursor: pointer;
+      margin-top: 8px;
+    }
+
+    /* HEADER */
+    .app-bar {
+      background: var(--card);
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    }
+
+    .user-info { display: flex; align-items: center; gap: 10px; }
+    .avatar {
+      width: 38px; height: 38px;
+      background: var(--primary-light);
+      color: var(--primary-dark);
+      border-radius: 50%; font-weight: 800;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.95rem;
+    }
+
+    .store-name { font-weight: 800; font-size: 0.9rem; color: var(--text); }
+    .cashier-name { font-size: 0.72rem; color: var(--muted); }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .icon-btn {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 6px 10px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    /* SEARCH & SCANNER */
+    .search-container {
+      padding: 10px 16px;
+      background: var(--card);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .search-bar {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 8px 12px;
+      display: flex; align-items: center; gap: 10px;
+    }
+
+    .search-bar input {
+      border: none; background: transparent; outline: none;
+      width: 100%; font-size: 0.85rem; font-weight: 600; color: var(--text);
+    }
+
+    /* CATEGORIES */
+    .categories {
+      display: flex; gap: 8px; overflow-x: auto;
+      padding: 10px 16px; scrollbar-width: none;
+      background: var(--card); border-bottom: 1px solid var(--border);
+    }
+
+    .cat-chip {
+      background: var(--bg); border: 1px solid var(--border);
+      padding: 6px 14px; border-radius: 20px;
+      font-size: 0.75rem; font-weight: 700; color: var(--muted);
+      white-space: nowrap; cursor: pointer; transition: all 0.2s;
+    }
+
+    .cat-chip.active {
+      background: var(--primary); color: white; border-color: var(--primary);
+      box-shadow: 0 4px 10px rgba(16, 185, 129, 0.2);
+    }
+
+    /* PRODUCT CATALOG GRID */
+    .product-grid {
+      flex: 1; overflow-y: auto; padding: 14px;
+      display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;
+      align-content: start;
+    }
+
+    .product-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 16px; padding: 12px;
+      display: flex; flex-direction: column; justify-content: space-between;
+      cursor: pointer; transition: transform 0.1s, border-color 0.2s;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.02); min-height: 100px;
+    }
+
+    .product-card:active { transform: scale(0.97); }
+    .product-card.selected { border: 2px solid var(--primary); background: var(--primary-light); }
+    
+    .p-title { font-size: 0.85rem; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+    .p-price { font-size: 0.9rem; font-weight: 800; color: var(--primary-dark); }
+    .p-stock { font-size: 0.7rem; color: var(--muted); margin-top: 4px; }
+    .p-stock.out { color: var(--danger); font-weight: 700; }
+
+    /* BOTTOM CART BAR */
+    .cart-sheet {
+      background: var(--card); border-top: 1px solid var(--border);
+      padding: 14px 16px; box-shadow: 0 -10px 25px rgba(0,0,0,0.05);
+    }
+
+    .cart-summary { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    .cart-items-count { font-size: 0.78rem; font-weight: 700; color: var(--muted); }
+    .total-val { font-size: 1.25rem; font-weight: 800; color: var(--text); }
+
+    .btn-pay {
+      width: 100%; background: var(--primary); color: white; border: none;
+      padding: 14px; border-radius: 14px; font-size: 0.95rem; font-weight: 800;
+      cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px;
+      box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3); transition: background 0.2s;
+    }
+
+    .btn-pay:disabled { background: var(--border); color: var(--muted); box-shadow: none; cursor: not-allowed; }
+
+    /* MODAL OVERLAY */
+    .modal-overlay {
+      position: absolute; inset: 0; background: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(4px); display: none;
+      align-items: flex-end; justify-content: center; z-index: 100;
+    }
+
+    .modal-card {
+      background: var(--card); width: 100%; border-radius: 24px 24px 0 0;
+      padding: 20px; max-height: 88%; display: flex; flex-direction: column; gap: 14px;
+      animation: slideUp 0.25s ease-out;
+      overflow-y: auto;
+    }
+
+    @keyframes slideUp {
+      from { transform: translateY(100%); }
+      to { transform: translateY(0); }
+    }
+
+    .modal-header { display: flex; justify-content: space-between; align-items: center; }
+    .modal-title { font-size: 1.05rem; font-weight: 800; }
+    .close-btn { background: var(--bg); border: none; width: 32px; height: 32px; border-radius: 50%; font-weight: 800; cursor: pointer; }
+
+    /* CART ITEMS LIST IN MODAL */
+    .cart-item-list { overflow-y: auto; max-height: 250px; display: flex; flex-direction: column; gap: 10px; }
+    .cart-item-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 8px 0; border-bottom: 1px solid var(--border);
+    }
+
+    .qty-controls { display: flex; align-items: center; gap: 8px; }
+    .btn-qty {
+      width: 28px; height: 28px; border-radius: 8px; border: 1px solid var(--border);
+      background: var(--bg); font-weight: 800; display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+    }
+
+    /* PAYMENT METHOD SELECTOR */
+    .payment-methods { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 8px 0; }
+    .pay-opt {
+      border: 1px solid var(--border); border-radius: 12px; padding: 10px 6px;
+      text-align: center; font-size: 0.78rem; font-weight: 700; cursor: pointer;
+    }
+    .pay-opt.active { border-color: var(--primary); background: var(--primary-light); color: var(--primary-dark); }
+
+    /* CASH INPUT QUICK BUTTONS */
+    .quick-cash { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 8px; }
+    .cash-btn {
+      background: var(--bg); border: 1px solid var(--border); padding: 8px;
+      border-radius: 10px; font-size: 0.78rem; font-weight: 700; cursor: pointer; text-align: center;
+    }
+
+    /* RECEIPT MODAL & PRINTER DYNAMIC STYLES */
+    .receipt-container {
+      background: #ffffff;
+      border: 1px dashed #cbd5e1;
+      border-radius: 12px;
+      padding: 16px 12px;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 0.78rem;
+      color: #000000;
+      margin: 0 auto;
+      transition: width 0.3s;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+    }
+
+    .receipt-58mm { width: 220px; font-size: 0.72rem; }
+    .receipt-80mm { width: 310px; font-size: 0.82rem; }
+
+    .bt-status {
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 6px 12px;
+      border-radius: 8px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+    .bt-connected { background: #d1fae5; color: #047857; }
+    .bt-disconnected { background: #fef2f2; color: #dc2626; }
+  </style>
+</head>
+<body>
+
+  <!-- 1. LOGIN OVERLAY WITH PIN -->
+  <div class="login-overlay" id="loginOverlay">
+    <div class="login-card">
+      <div class="login-avatar" id="loginAvatarIcon">🔑</div>
+      <div class="login-title">LOGIN KASIR POS</div>
+      <div class="login-subtitle">Masukkan akun & PIN akses kasir Anda</div>
+
+      <div class="form-group">
+        <label class="form-label">PILIH AKUN KASIR</label>
+        <select class="form-select" id="userSelect"></select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">PIN / PASSWORD AKSES</label>
+        <input type="password" class="form-input" id="pinInput" placeholder="•••" maxlength="8">
+      </div>
+
+      <button class="btn-login" onclick="validateLogin()">MASUK APLIKASI</button>
+    </div>
+  </div>
+
+  <!-- MAIN APP SCREEN -->
+  <div class="app-screen">
+    <!-- HEADER -->
+    <div class="app-bar">
+      <div class="user-info">
+        <div class="avatar" id="activeAvatar">B</div>
+        <div>
+          <div class="store-name">Kopi Nusantara</div>
+          <div class="cashier-name" id="activeCashierLabel">Kasir: Budi Santoso</div>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button class="icon-btn" onclick="openPrinterModal()">🖨️ Printer</button>
+        <button class="icon-btn" style="color:var(--danger);" onclick="logout()">🚪 Exit</button>
+      </div>
+    </div>
+
+    <!-- SEARCH BAR -->
+    <div class="search-container">
+      <div class="search-bar">
+        <span>🔍</span>
+        <input type="text" id="searchInput" placeholder="Cari menu atau kode produk..." oninput="renderCatalog()">
+      </div>
+    </div>
+
+    <!-- CATEGORIES -->
+    <div class="categories" id="categoriesContainer">
+      <div class="cat-chip active" onclick="filterCategory('all', this)">Semua (8)</div>
+      <div class="cat-chip" onclick="filterCategory('kopi', this)">☕ Kopi</div>
+      <div class="cat-chip" onclick="filterCategory('nonkopi', this)">🥤 Non-Kopi</div>
+      <div class="cat-chip" onclick="filterCategory('makanan', this)">🍞 Makanan</div>
+      <div class="cat-chip" onclick="filterCategory('snack', this)">🍟 Snack</div>
+    </div>
+
+    <!-- CATALOG GRID -->
+    <div class="product-grid" id="catalogGrid"></div>
+
+    <!-- CART BOTTOM BAR -->
+    <div class="cart-sheet">
+      <div class="cart-summary">
+        <div>
+          <div class="cart-items-count" id="cartCountText">0 Produk Terpilih</div>
+          <div class="total-val" id="cartTotalText">Rp 0</div>
+        </div>
+        <span style="font-size:0.8rem; color:var(--primary-dark); font-weight:800; cursor:pointer;" onclick="openCartModal()">Detail Keranjang ➔</span>
+      </div>
+      <button class="btn-pay" id="btnMainPay" onclick="openPaymentModal()" disabled>PROSES BAYAR</button>
+    </div>
+
+    <!-- MODAL 1: DETAIL KERANJANG -->
+    <div class="modal-overlay" id="cartModal">
+      <div class="modal-card">
+        <div class="modal-header">
+          <div class="modal-title">Rincian Pesanan</div>
+          <button class="close-btn" onclick="closeModal('cartModal')">✕</button>
+        </div>
+        <div class="cart-item-list" id="cartItemsList"></div>
+        <button class="btn-pay" onclick="closeModal('cartModal'); openPaymentModal();">LANJUT KE PEMBAYARAN</button>
+      </div>
+    </div>
+
+    <!-- MODAL 2: METODE PEMBAYARAN -->
+    <div class="modal-overlay" id="paymentModal">
+      <div class="modal-card">
+        <div class="modal-header">
+          <div class="modal-title">Pembayaran</div>
+          <button class="close-btn" onclick="closeModal('paymentModal')">✕</button>
+        </div>
+        <div>
+          <span style="font-size:0.75rem; color:var(--muted); font-weight:700;">TOTAL TAGIHAN</span>
+          <div class="total-val" id="payModalTotal" style="font-size: 1.5rem; color:var(--primary-dark);">Rp 0</div>
+        </div>
+
+        <div>
+          <span style="font-size:0.75rem; color:var(--muted); font-weight:700;">PILIH METODE</span>
+          <div class="payment-methods">
+            <div class="pay-opt active" onclick="selectPayMethod('cash', this)">💵 TUNAI</div>
+            <div class="pay-opt" onclick="selectPayMethod('qris', this)">📱 QRIS</div>
+            <div class="pay-opt" onclick="selectPayMethod('bank', this)">💳 DEBIT</div>
+          </div>
+        </div>
+
+        <div id="cashInputSection">
+          <span style="font-size:0.75rem; color:var(--muted); font-weight:700;">UANG DITERIMA</span>
+          <input type="number" id="cashInput" style="width:100%; padding:10px 12px; border-radius:12px; border:1px solid var(--border); font-size:1.05rem; font-weight:800; margin-top:4px;" placeholder="0" oninput="calculateChange()">
+          <div class="quick-cash" id="quickCashContainer"></div>
+          <div style="margin-top:8px; font-size:0.8rem; font-weight:700;">Kembalian: <span id="changeText" style="color:var(--primary-dark); font-size:0.95rem;">Rp 0</span></div>
+        </div>
+
+        <button class="btn-pay" onclick="executePayment()">KONFIRMASI BAYAR</button>
+      </div>
+    </div>
+
+    <!-- MODAL 3: PENGATURAN BLUETOOTH PRINTER -->
+    <div class="modal-overlay" id="printerModal">
+      <div class="modal-card">
+        <div class="modal-header">
+          <div class="modal-title">Pengaturan Printer Bluetooth</div>
+          <button class="close-btn" onclick="closeModal('printerModal')">✕</button>
+        </div>
+
+        <div id="btStatusBox" class="bt-status bt-disconnected">
+          🔴 Printer Belum Terhubung
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" style="color:var(--text)">UKURAN LEBAR KERTAS PRINTER</label>
+          <select class="form-select" id="paperSizeSelect" style="background:var(--bg); color:var(--text);" onchange="updatePaperSize(this.value)">
+            <option value="58mm" selected>58 mm (Printer Thermal Portable / Mini)</option>
+            <option value="80mm">80 mm (Printer Desktop Kasir Besar)</option>
+          </select>
+        </div>
+
+        <button class="btn-pay" style="background:#2563eb;" onclick="connectBluetoothPrinter()">📲 CARI & HUBUNGKAN PRINTER BLUETOOTH</button>
+      </div>
+    </div>
+
+    <!-- MODAL 4: STRUK NOTA PENJUALAN -->
+    <div class="modal-overlay" id="receiptModal">
+      <div class="modal-card">
+        <div class="modal-header">
+          <div class="modal-title">Transaksi Berhasil! ✅</div>
+          <button class="close-btn" onclick="closeModal('receiptModal')">✕</button>
+        </div>
+        
+        <div style="text-align:center; margin-bottom: 6px;">
+          <span style="font-size:0.75rem; color:var(--muted); font-weight:700;">Ukuran Struk: <b id="currentPaperLabel">58 mm</b></span>
+        </div>
+
+        <div class="receipt-container receipt-58mm" id="receiptContent"></div>
+
+        <div style="display:flex; gap:8px;">
+          <button class="btn-pay" style="background:var(--bg); color:var(--text); border:1px solid var(--border);" onclick="printReceiptBluetooth()">🖨️ CETAK NOTA</button>
+          <button class="btn-pay" onclick="finishTransaction()">TRANSAKSI BARU</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // 1. DATA USER HAK AKSES DARI WEB ADMIN
+    const userAccessList = [
+      { id: 1, name: "Budi Santoso", role: "Kasir Utama", pin: "1234" },
+      { id: 2, name: "Siti Rahma", role: "Kasir Pagi", pin: "5678" },
+      { id: 3, name: "Admin Store", role: "Manager", pin: "9999" }
+    ];
+
+    let currentUser = null;
+
+    // 2. DATA KATALOG PRODUK
+    let products = [
+      { id: 1, name: "Kopi Susu Aren", price: 18000, stock: 45, category: "kopi" },
+      { id: 2, name: "Americano Ice", price: 14000, stock: 50, category: "kopi" },
+      { id: 3, name: "Matcha Latte", price: 20000, stock: 25, category: "nonkopi" },
+      { id: 4, name: "Chocolate Ice", price: 18000, stock: 30, category: "nonkopi" },
+      { id: 5, name: "Roti Bakar Cokelat", price: 15000, stock: 20, category: "makanan" },
+      { id: 6, name: "Croissant Butter", price: 22000, stock: 15, category: "makanan" },
+      { id: 7, name: "French Fries Pro", price: 12000, stock: 12, category: "snack" },
+      { id: 8, name: "Cireng Bumbu Rujak", price: 10000, stock: 18, category: "snack" }
+    ];
+
+    let cart = [];
+    let activeCategory = 'all';
+    let selectedPayMethod = 'cash';
+
+    // 3. BLUETOOTH & PRINTER CONFIG STATE
+    let bluetoothDevice = null;
+    let writeCharacteristic = null;
+    let selectedPaperSize = '58mm';
+
+    // INITIALIZATION & LOGIN
+    function initLogin() {
+      const select = document.getElementById('userSelect');
+      select.innerHTML = '';
+      userAccessList.forEach(u => {
+        const opt = document.createElement('option');
+        opt.value = u.id;
+        opt.innerText = `${u.name} (${u.role})`;
+        select.appendChild(opt);
+      });
+    }
+
+    function validateLogin() {
+      const userId = parseInt(document.getElementById('userSelect').value);
+      const pin = document.getElementById('pinInput').value;
+
+      const user = userAccessList.find(u => u.id === userId);
+      if (user && user.pin === pin) {
+        currentUser = user;
+        document.getElementById('activeCashierLabel').innerText = `Kasir: ${user.name}`;
+        document.getElementById('activeAvatar').innerText = user.name.charAt(0);
+        document.getElementById('loginOverlay').style.display = 'none';
+        document.getElementById('pinInput').value = '';
+      } else {
+        alert('PIN/Password Akses Salah! Silakan coba lagi.');
+      }
+    }
+
+    function logout() {
+      if (confirm('Keluar dari sistem kasir?')) {
+        currentUser = null;
+        document.getElementById('loginOverlay').style.display = 'flex';
+      }
+    }
+
+    // KATALOG & FILTER
+    function renderCatalog() {
+      const query = document.getElementById('searchInput').value.toLowerCase();
+      const grid = document.getElementById('catalogGrid');
+      grid.innerHTML = '';
+
+      let filtered = products.filter(p => p.name.toLowerCase().includes(query));
+      if (activeCategory !== 'all') {
+        filtered = filtered.filter(p => p.category === activeCategory);
+      }
+
+      filtered.forEach(p => {
+        const inCart = cart.find(c => c.id === p.id);
+        const card = document.createElement('div');
+        card.className = `product-card ${inCart ? 'selected' : ''}`;
+        card.onclick = () => addToCart(p);
+
+        card.innerHTML = `
+          <div>
+            <div class="p-title">${p.name}</div>
+            <div class="p-price">Rp ${p.price.toLocaleString('id-ID')}</div>
+          </div>
+          <div class="p-stock ${p.stock === 0 ? 'out' : ''}">
+            ${p.stock > 0 ? 'Stok: ' + p.stock : 'Stok Habis'}
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    function filterCategory(cat, el) {
+      activeCategory = cat;
+      document.querySelectorAll('#categoriesContainer .cat-chip').forEach(c => c.classList.remove('active'));
+      el.classList.add('active');
+      renderCatalog();
+    }
+
+    // CART MANAGEMENT
+    function addToCart(p) {
+      if (p.stock <= 0) return alert('Stok produk ini habis!');
+      const exist = cart.find(item => item.id === p.id);
+
+      if (exist) {
+        if (exist.qty >= p.stock) return alert('Batas jumlah stok tercapai!');
+        exist.qty++;
+      } else {
+        cart.push({ ...p, qty: 1 });
+      }
+
+      updateCartUI();
+      renderCatalog();
+    }
+
+    function changeQty(id, delta) {
+      const item = cart.find(c => c.id === id);
+      if (!item) return;
+
+      const product = products.find(p => p.id === id);
+
+      item.qty += delta;
+      if (item.qty > product.stock) {
+        item.qty = product.stock;
+        alert('Mencapai batas stok!');
+      }
+
+      if (item.qty <= 0) {
+        cart = cart.filter(c => c.id !== id);
+      }
+
+      updateCartUI();
+      renderCatalog();
+    }
+
+    function updateCartUI() {
+      const totalCount = cart.reduce((sum, i) => sum + i.qty, 0);
+      const totalPrice = cart.reduce((sum, i) => sum + (i.price * i.qty), 0);
+
+      document.getElementById('cartCountText').innerText = `${totalCount} Produk Terpilih`;
+      document.getElementById('cartTotalText').innerText = `Rp ${totalPrice.toLocaleString('id-ID')}`;
+      document.getElementById('btnMainPay').disabled = cart.length === 0;
+
+      const container = document.getElementById('cartItemsList');
+      container.innerHTML = '';
+
+      if (cart.length === 0) {
+        container.innerHTML = '<div style="text-align:center; color:var(--muted); padding:20px;">Keranjang kosong</div>';
+        closeModal('cartModal');
+        return;
+      }
+
+      cart.forEach(item => {
+        const row = document.createElement('div');
+        row.className = 'cart-item-row';
+        row.innerHTML = `
+          <div>
+            <div style="font-weight:700; font-size:0.85rem;">${item.name}</div>
+            <div style="font-size:0.75rem; color:var(--muted);">Rp ${item.price.toLocaleString('id-ID')}</div>
+          </div>
+          <div class="qty-controls">
+            <button class="btn-qty" onclick="changeQty(${item.id}, -1)">-</button>
+            <span style="font-weight:800; font-size:0.85rem;">${item.qty}</span>
+            <button class="btn-qty" onclick="changeQty(${item.id}, 1)">+</button>
+          </div>
+        `;
+        container.appendChild(row);
+      });
+    }
+
+    // MODAL CONTROL
+    function openCartModal() {
+      if (cart.length === 0) return;
+      document.getElementById('cartModal').style.display = 'flex';
+    }
+
+    function openPaymentModal() {
+      if (cart.length === 0) return;
+      const total = cart.reduce((sum, i) => sum + (i.price * i.qty), 0);
+      document.getElementById('payModalTotal').innerText = `Rp ${total.toLocaleString('id-ID')}`;
+
+      const quickContainer = document.getElementById('quickCashContainer');
+      quickContainer.innerHTML = '';
+      [total, 20000, 50000, 100000].forEach(val => {
+        if (val >= total) {
+          const btn = document.createElement('div');
+          btn.className = 'cash-btn';
+          btn.innerText = `Rp ${val.toLocaleString('id-ID')}`;
+          btn.onclick = () => {
+            document.getElementById('cashInput').value = val;
+            calculateChange();
+          };
+          quickContainer.appendChild(btn);
+        }
+      });
+
+      document.getElementById('paymentModal').style.display = 'flex';
+    }
+
+    function openPrinterModal() {
+      document.getElementById('printerModal').style.display = 'flex';
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).style.display = 'none';
+    }
+
+    function selectPayMethod(method, el) {
+      selectedPayMethod = method;
+      document.querySelectorAll('.pay-opt').forEach(opt => opt.classList.remove('active'));
+      el.classList.add('active');
+
+      const cashSec = document.getElementById('cashInputSection');
+      cashSec.style.display = method === 'cash' ? 'block' : 'none';
+    }
+
+    function calculateChange() {
+      const total = cart.reduce((sum, i) => sum + (i.price * i.qty), 0);
+      const cash = parseFloat(document.getElementById('cashInput').value) || 0;
+      const change = cash - total;
+
+      const changeText = document.getElementById('changeText');
+      if (change >= 0) {
+        changeText.innerText = `Rp ${change.toLocaleString('id-ID')}`;
+        changeText.style.color = 'var(--primary-dark)';
+      } else {
+        changeText.innerText = `Kurang Rp ${Math.abs(change).toLocaleString('id-ID')}`;
+        changeText.style.color = 'var(--danger)';
+      }
+    }
+
+    function updatePaperSize(size) {
+      selectedPaperSize = size;
+      const container = document.getElementById('receiptContent');
+      document.getElementById('currentPaperLabel').innerText = size;
+
+      if (size === '58mm') {
+        container.className = 'receipt-container receipt-58mm';
+      } else {
+        container.className = 'receipt-container receipt-80mm';
+      }
+    }
+
+    // KONEKSI & SCAN PRINTER BLUETOOTH
+    async function connectBluetoothPrinter() {
+      if (!navigator.bluetooth) {
+        alert('Browser Anda belum mendukung Web Bluetooth API. Gunakan Chrome/Edge.');
+        return;
+      }
+
+      try {
+        bluetoothDevice = await navigator.bluetooth.requestDevice({
+          acceptAllDevices: true,
+          optionalServices: [
+            '000018f0-0000-1000-8000-00805f9b34fb', 
+            '49535343-fe7d-4ae5-8fa9-9fafd205e455',
+            '00001101-0000-1000-8000-00805f9b34fb'
+          ]
+        });
+
+        const server = await bluetoothDevice.gatt.connect();
+        const services = await server.getPrimaryServices();
+
+        writeCharacteristic = null;
+        for (const service of services) {
+          const characteristics = await service.getCharacteristics();
+          for (const char of characteristics) {
+            if (char.properties.write || char.properties.writeWithoutResponse) {
+              writeCharacteristic = char;
+              break;
+            }
+          }
+          if (writeCharacteristic) break;
+        }
+
+        const statusBox = document.getElementById('btStatusBox');
+        if (writeCharacteristic) {
+          statusBox.className = 'bt-status bt-connected';
+          statusBox.innerHTML = `🟢 Terhubung: <b>${bluetoothDevice.name || 'Printer Thermal'}</b>`;
+          alert(`Berhasil terhubung ke: ${bluetoothDevice.name || 'Printer Thermal'}`);
+        } else {
+          statusBox.className = 'bt-status bt-disconnected';
+          statusBox.innerHTML = `🔴 Karakteristik Cetak Tidak Ditemukan`;
+        }
+      } catch (error) {
+        console.error(error);
+        alert('Gagal mengoneksikan Bluetooth: ' + error.message);
+      }
+    }
+
+    function encodeText(text) {
+      return new TextEncoder().encode(text);
+    }
+
+    // FUNGSI PRINT OUT ESC/POS KE PRINTER BLUETOOTH
+    async function printReceiptBluetooth() {
+      if (!bluetoothDevice || !bluetoothDevice.gatt.connected || !writeCharacteristic) {
+        alert('Printer Bluetooth belum terhubung! Membuka dialog cetak browser...');
+        window.print();
+        return;
+      }
+
+      try {
+        const ESC = 0x1B;
+        let commands = [];
+
+        // Reset Printer (ESC @) & Rata Tengah
+        commands.push(ESC, 0x40);
+        commands.push(ESC, 0x61, 0x01);
+
+        commands.push(...encodeText("KOPI NUSANTARA\n"));
+        commands.push(...encodeText("Jl. Raya Nusantara No. 12\n"));
+        commands.push(...encodeText("Telp: 0812-3456-7890\n"));
+
+        const is58 = selectedPaperSize === '58mm';
+        const divider = is58 ? "--------------------------------\n" : "------------------------------------------------\n";
+        commands.push(...encodeText(divider));
+
+        // Rata Kiri
+        commands.push(ESC, 0x61, 0x00);
+
+        const now = new Date();
+        commands.push(...encodeText(`Tgl: ${now.toLocaleDateString('id-ID')} ${now.toLocaleTimeString('id-ID')}\n`));
+        commands.push(...encodeText(`Kasir: ${currentUser ? currentUser.name : 'Budi Santoso'}\n`));
+        commands.push(...encodeText(divider));
+
+        // Rincian Produk
+        let total = 0;
+        cart.forEach(i => {
+          const itemTotal = i.price * i.qty;
+          total += itemTotal;
+          const line = `${i.name} x${i.qty}`.padEnd(is58 ? 20 : 32) + `Rp ${itemTotal.toLocaleString('id-ID')}\n`;
+          commands.push(...encodeText(line));
+        });
+
+        commands.push(...encodeText(divider));
+
+        const cash = parseFloat(document.getElementById('cashInput').value) || 0;
+        const change = selectedPayMethod === 'cash' ? (cash - total) : 0;
+
+        commands.push(...encodeText(`TOTAL    : Rp ${total.toLocaleString('id-ID')}\n`));
+        commands.push(...encodeText(`BAYAR    : Rp ${(selectedPayMethod === 'cash' ? cash : total).toLocaleString('id-ID')}\n`));
+        commands.push(...encodeText(`KEMBALI  : Rp ${change.toLocaleString('id-ID')}\n`));
+        commands.push(...encodeText(divider));
+
+        // Rata Tengah Ucapan Terima Kasih & Feed Kertas
+        commands.push(ESC, 0x61, 0x01);
+        commands.push(...encodeText("Terima Kasih Atas Kunjungan Anda!\n\n\n\n"));
+        commands.push(ESC, 0x64, 0x03);
+
+        const dataArray = new Uint8Array(commands);
+
+        // Kirim Data Chunk per 512 byte
+        const chunkSize = 512;
+        for (let i = 0; i < dataArray.length; i += chunkSize) {
+          const chunk = dataArray.slice(i, i + chunkSize);
+          await writeCharacteristic.writeValue(chunk);
+        }
+
+        alert('Struk berhasil dicetak!');
+      } catch (error) {
+        console.error("Gagal Mencetak:", error);
+        alert('Terjadi kesalahan saat mencetak: ' + error.message);
+      }
+    }
+
+    // PEMBAYARAN EXECUTION
+    function executePayment() {
+      const total = cart.reduce((sum, i) => sum + (i.price * i.qty), 0);
+      const cash = parseFloat(document.getElementById('cashInput').value) || 0;
+
+      if (selectedPayMethod === 'cash' && cash < total) {
+        return alert('Uang yang diterima kurang!');
+      }
+
+      cart.forEach(item => {
+        const prod = products.find(p => p.id === item.id);
+        if (prod) prod.stock -= item.qty;
+      });
+
+      const now = new Date();
+      const is58 = selectedPaperSize === '58mm';
+      const divider = is58 ? '--------------------------------' : '------------------------------------------------';
+
+      let receiptHTML = `
+        <div style="text-align:center; font-weight:bold; margin-bottom:4px;">KOPI NUSANTARA</div>
+        <div style="text-align:center; font-size:0.7rem;">Jl. Raya Nusantara No. 12</div>
+        <div style="text-align:center; font-size:0.7rem; margin-bottom:8px;">Telp: 0812-3456-7890</div>
+        <div>${divider}</div>
+        <div>Tgl: ${now.toLocaleDateString('id-ID')} ${now.toLocaleTimeString('id-ID')}</div>
+        <div>Kasir: ${currentUser ? currentUser.name : 'Budi Santoso'}</div>
+        <div>${divider}</div>
+      `;
+
+      cart.forEach(i => {
+        receiptHTML += `
+          <div style="display:flex; justify-content:space-between; margin: 2px 0;">
+            <span>${i.name} x${i.qty}</span>
+            <span>Rp ${(i.price * i.qty).toLocaleString('id-ID')}</span>
+          </div>
+        `;
+      });
+
+      const change = selectedPayMethod === 'cash' ? (cash - total) : 0;
+      receiptHTML += `
+        <div>${divider}</div>
+        <div style="display:flex; justify-content:space-between; font-weight:bold;">
+          <span>TOTAL</span>
+          <span>Rp ${total.toLocaleString('id-ID')}</span>
+        </div>
+        <div style="display:flex; justify-content:space-between;">
+          <span>BAYAR (${selectedPayMethod.toUpperCase()})</span>
+          <span>Rp ${(selectedPayMethod === 'cash' ? cash : total).toLocaleString('id-ID')}</span>
+        </div>
+        <div style="display:flex; justify-content:space-between;">
+          <span>KEMBALI</span>
+          <span>Rp ${change.toLocaleString('id-ID')}</span>
+        </div>
+        <div style="text-align:center; margin-top:10px; font-size:0.7rem;">Terima Kasih Atas Kunjungan Anda!</div>
+      `;
+
+      updatePaperSize(selectedPaperSize);
+      document.getElementById('receiptContent').innerHTML = receiptHTML;
+      closeModal('paymentModal');
+      document.getElementById('receiptModal').style.display = 'flex';
+    }
+
+    function finishTransaction() {
+      cart = [];
+      document.getElementById('cashInput').value = '';
+      closeModal('receiptModal');
+      updateCartUI();
+      renderCatalog();
+    }
+
+    // INIT
+    initLogin();
+    renderCatalog();
+  </script>
+</body>
+</html>
